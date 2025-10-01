@@ -9,6 +9,19 @@ app.use(express.json());
 const { users, documents, employees } = require('./data');
 
 // --- MIDDLEWARE ---
+
+// Логування всіх запитів
+const loggingMiddleware = (req, res, next) => {
+  const timestamp = new Date().toISOString();
+  const method = req.method;
+  const url = req.url;
+  console.log(`[${timestamp}] ${method} ${url}`);
+  next();
+};
+
+app.use(loggingMiddleware);
+
+// Аутентифікація
 const authMiddleware = (req, res, next) => {
   const login = req.headers['x-login'];
   const password = req.headers['x-password'];
@@ -27,12 +40,14 @@ const authMiddleware = (req, res, next) => {
   next();
 };
 
+// Авторизація лише для адмінів
 const adminOnlyMiddleware = (req, res, next) => {
   if (!req.user || req.user.role !== 'admin') {
     return res.status(403).json({ message: 'Access denied. Admin role required.' });
   }
   next();
 };
+
 // --- КІНЕЦЬ MIDDLEWARE ---
 
 // --- МАРШРУТИ ---
